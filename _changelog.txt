@@ -1,0 +1,158 @@
+change log:
+
+v0.9.rc3 (2022/07/28)
+- Please read IMPORTANT_README_FIRST.txt
+- NEW! Whatsapp logout button.
+- NEW! Delete device/sender will logout your Whatsapp as well.
+- NEW! Fetch group contacts from your whatsapp
+- NEW! Save Groups and save Participants directly to Phonebooks.
+- FIXED! 31 of 31 days typo.
+- FIXED! No profile picture causing QR code not disappear after scan QR.
+
+v0.9.rc2 (2022/07/19)
+- Please read IMPORTANT_README_FIRST.txt
+- NEW! Add, Edit, and Delete contact inside phonebook menu (click on PHONEBOOK DATA)
+- NEW! Whatsapp verification for new users
+- FIXED! Slow database connection. Please add "APP_URL=https://my-admin-panel.com" to nodejs side .env file.
+- FIXED! API parameters too long. Now no need to input "appurl" parameter in the api request. Please check API sample on "Rest API page".
+
+v0.9.rc1 (2022/07/03)
+- Please read IMPORTANT_README_FIRST.txt
+- NEW! Send vcard (virtual contact) by sending "vcard" text in the message
+- NEW! Send multiple numbers from "Send message" menu with comma (",")
+- NEW! Save sent message through API to database
+- FIXED! (extended license) All customers expired and revert to "trial" at the last day of the month.
+- FIXED! Bug fixes.
+- UPDATE! server.js stability update.
+- UPDATE! Laravel to v9.16 now requires minimum PHP8.1
+  Please check if your server support PHP8.1 before doing update!
+
+v0.9.beta3 (2022/06/20)
+- Please read IMPORTANT_README_FIRST.txt
+- FIXED! Missing webhook url edit on Devices menu.
+- NEW! Edit webhook file from Devices menu.
+- NEW! Default Autoreply if no keyword matched.
+  Please check: https://visimisi.net/docs/default-autoreply-if-no-keyword-matched/
+- UPDATE! server.js stability update.
+- UPDATE! Laravel to v9.16 now requires minimum PHP8.1
+  Please check if your server support PHP8.1 before doing update!
+- UPDATE! Latest Baileys stable v4.2.0
+
+v0.9.beta2 (2022/06/12)
+- Please read IMPORTANT_README_FIRST.txt
+- FIXED! Nodejs missing https package causing cannot be installed on vps.
+- FIXED! Add new Device/Template/Phonebook, error "max = 1".
+- NEW! Autoreply can use {name} to show receiver name. Example: "Hi {name}, How are you today?".
+- NEW! Email notification (registration and reset password) is enabled by default now.
+- REVIVED! Wallet, Subscription packages, and SaaS system. Available for Extended license only.
+  Please upgrade license if you need this feature!
+- UPDATE! server.js stability update.
+- UPDATE! Laravel to v9.16 now requires minimum PHP8.1
+  Please check if your server support PHP8.1 before doing update!
+- UPDATE! Latest Baileys commit per today.
+
+v0.9.beta (2022/06/06)
+- Please read IMPORTANT_README_FIRST.txt
+- FIXED! Send document message but no filename
+- FIXED! Problem with high IO usage on shared cPanel hosting
+- FIXED! Socket connection stability issue
+- FIXED! Send mp3 media, message sent but no mp3 file
+- FIXED! Error rate_yearly cannot be null when adding new package
+- FIXED! Autoreply expecting array, but null given error
+- DROPPED! Wallet and Saas system. Causing high IO usage. Will bring back in the future.
+  Please do not update if you are depending on Saas feature!
+- UPDATE! Laravel to v9.16 now requires minimum PHP8.1
+  Please check if your server support PHP8.1 before doing update!
+
+v0.8.9 (2022/05/24)
+- FIXED! Send message with GET api not working
+- FIXED! Customer can not self-renew after expired
+- FIXED! Add new user from Users menu. "password doesn't have a default value"
+- FIXED! /lang/us.json and /lang/br.json transalation files
+  Please use the new file to translate to your own language
+- FIXED! username (admin & bank) and package (super & trial) can be edited
+  Since the addition of wallet system wazone requires these variables to be static.
+  username (admin & bank) and package (super & trial) CAN NOT be edited.
+  you can still change the password or change the package max limit/price
+  MAY NOT change the name!
+  please check https://visimisi.net/docs/wazone-wallet-system/ to understand better
+- DOCS! https://visimisi.net/docs/wazone-wallet-system/
+- DOCS! https://visimisi.net/docs/wazone-buttons-message/
+- UPDATE! Latest Baileys commit per today
+
+v0.8.8 (2022/05/19)
+- NEW! Wallet system for auto-renew subscription
+- NEW! Login as.. button in Users menu
+- NEW! Nodejs auto-refresh. Set in .env file (Nodejs server)
+  TIMER_REFRESH=true
+  TIMER_SHOWLOG=true
+  TIMER_MINUTES=10
+- FIXED! Autoreply gone to sleep mode after a few minutes
+- FIXED! Autoreply gone to sleep after send API message
+
+v0.8.5 (2022/05/09)
+- NEW! Autoreply can use button click as a keyword
+- FIXED! Buttons message not sending if multi receivers or scheduled
+
+v0.8.2 (2022/04/30)
+- FIXED! Able to send messages to non-whatsapp numbers
+- FIXED! Autoreply gone to sleep mode after a few minutes
+
+v0.8.1 (2022/04/28)
+- FIXED! Can not show QR code after logout from phone
+- FIXED! Just delete the Sender from Device-list and re-add the Sender
+- FIXED! Problem with installation when database migration because of MySQL database engine compatibility
+- ATTENTION! Requires to STOP -> START Nodejs App from cPanel (every update)
+- ATTENTION! Foodomaa whatsapp module, must update to v4.3 to use this version.
+
+v0.8.0 (2022/04/27)
+- NEW! Using different method of connecting to whatsapp to fix disconnection problem
+- FIXED! Whatsapp server disconnection
+- FIXED! Image sending messages problem
+- NEW! Adding new parameter on GET & POST Api request please check "Rest Api" page
+- ATTENTION! Requires to STOP -> START Nodejs App from cPanel (every update)
+- ATTENTION! Foodomaa whatsapp module, must update to v4.3 to use this version.
+
+v0.7.3 (2022/04/14)
+- UPDATED! Baileys package v4.1.0
+- NEW! Admin panel and Nodejs Server can be separated now
+- NEW! Easy installer for fresh and update install
+- NEW! Buttons message on Send message and Autoreply
+- NOT FULLY WORKING! Send media file from "Send Message" menu.
+- FULLY WORKING! Send media file from "Autoreply" menu.
+- ATTENTION! Requires to STOP -> START Nodejs App from cPanel (every update)
+
+v0.6.4 (2022/03/04)
+- FIXED! Autoreply edit. "Duplicate found" when save.
+- FIXED! Rest Api sample command. Unreadable when in dark mode.
+- FIXED! Added buttons array in rest api sample
+- FIXED! Api GET command can not send message (because of the buttons message addition)
+- FIXED! Class "PDO" not found
+
+v0.6.3 (2022/03/31)
+- NEW! Delete buttons for devices, autoreply, outbox, phonebook, template, payment, settings
+- NEW! Decimal point for prices
+- IMPROVED! Language file for the new pages added
+
+v0.6.2 (2022/03/30)
+- NEW! Button message on Send message menu
+- NEW! Search function
+
+v0.6.0 (2022/03/27)
+- Payment Gateways (Paypal, Mercadopago, and Razorpay) => works with test accounts.
+- Auto Installer for PHP Admin Panel => works. (Node.js still need to setup through cPanel).
+- Upgrade will still use extract on Wazone root folder method.
+- If possible, please do a FRESH INSTALL.
+- Extract the 'wazone-0.6.0.zip' to your gateway root folder,
+- Just rename your '.env' file on your server to '.env-backup',
+- Then browse to 'https://bot.yourdomain.com/install'
+- BUG FIXES. 
+
+v0.5.21 (2022/03/13)
+- BUG FIX. Multi receiver error when sending message through 'Send Message' page
+
+v0.5.19 (2022/03/12)
+- BUG FIX. Multiple files 'typo' causing error on multiple pages because of missing '_' (underscore)
+
+v0.5.18 (2022/03/10)
+- INITIAL public beta version

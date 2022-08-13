@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:true});var _textMessage=require("./TextMessage");class DocumentMessage extends _textMessage.TextMessage{constructor(src){super(src)}}exports.DocumentMessage=DocumentMessage
