@@ -65,14 +65,10 @@ class UserController extends Controller
         $user = User::where('id', '=', $request->user_id)->first();
         $upackage = $user->package;
         $packages = Package::all();
-        $daysTotal = Carbon::parse($user->billing_start)->diffInSeconds($user->billing_end, false) / 86400;
-        $daysUsed = Carbon::parse($user->billing_start)->diffInseconds(now()) / 86400;
-        $daysRemaining = Carbon::now()->diffInseconds($user->billing_end, false) / 86400;
-        if ($daysTotal <= 0) {
-            $percentUsed = 100;
-        } else {
-            $percentUsed = round($daysUsed / $daysTotal * 100, 2);
-        }
+        $daysTotal = round(Carbon::parse($user->billing_start)->diffInSeconds($user->billing_end, false) / 86400);
+        $daysUsed = round(Carbon::parse($user->billing_start)->diffInseconds(now()) / 86400);
+        $daysRemaining = round(Carbon::now()->diffInseconds($user->billing_end, false) / 86400);
+        $percentUsed = $daysTotal <= 0 ? 100 : round($daysUsed / $daysTotal * 100);
         if ($daysRemaining < -0.04 && $user->role !== 'admin' && Helper::isEx()) {
             $status = 'EXPIRED';
             $user->package_id = 2;
@@ -218,18 +214,18 @@ class UserController extends Controller
         return view('/user_expired', compact('user'));
     }
 
-    public function impersonate(User $user) 
+    public function impersonate(User $user)
     {
         auth()->user()->impersonate($user);
-    
+
         return redirect()->route('user.show', ['user_id' => $user->id]);
     }
-    
-    public function leaveImpersonate() 
+
+    public function leaveImpersonate()
     {
         auth()->user()->leaveImpersonation();
-    
-        return redirect()->route('user.list'); 
+
+        return redirect()->route('user.list');
     }
 
     public function locale(Request $request)
