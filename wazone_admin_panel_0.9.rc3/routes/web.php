@@ -6,6 +6,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\OutboxController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\PayLinkGateway;
 use App\Http\Controllers\PhonebookController;
 use App\Http\Controllers\RestApiController;
 use App\Http\Controllers\TemplateController;
@@ -31,6 +32,9 @@ Route::post('/query', [Helper::class, 'query'])->name('query');
 Route::post('/user-changephone', [UserController::class, 'changephone'])->name('user.changephone');
 Route::get('/user-verify', [UserController::class, 'verify'])->name('user.verify');
 Route::get('/user-verifynow/{id}/{code}', [UserController::class, 'verifynow'])->name('user.verifynow');
+
+Route::post('/payLink', [PayLinkGateway::class, 'CreateNewInvoice'])->name('payLink');
+Route::get('/payLink', [PayLinkGateway::class, 'payLinkSuccess']);
 
 Route::group(['middleware' => ['auth', 'verified', 'wa.verified']], function() {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');

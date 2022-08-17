@@ -78,7 +78,7 @@
                                                 <span class="fw-bolder me-25">{{ __('Panel theme') }}:</span>
                                                 <span>{{ $user->theme }}</span>
                                             </li>
-                                            @if (\Helper::isEx())
+{{--                                            @if (\Helper::isEx())--}}
                                             <li class="mb-75">
                                                 <span class="fw-bolder me-25">{{ __('Package') }}:</span>
                                                 <span>{{ $upackage->description }}</span>
@@ -103,7 +103,7 @@
                                                 @endif
                                                 @endif
                                             </li>
-                                            @endif
+{{--                                            @endif--}}
                                         </ul>
                                         <div class="d-flex justify-content-center pt-2">
                                             <a href="javascript:;" class="btn btn-primary me-1" data-bs-target="#editUser" data-bs-toggle="modal">{{ __('Edit') }}</a>
@@ -117,7 +117,7 @@
                         <!--/ User Sidebar -->
 
                         <!-- User Content -->
-                        @if (\Helper::isEx())
+{{--                        @if (\Helper::isEx())--}}
                         @if ($upackage->name !== 'super' && $user->role !== 'admin')
                         <div class="col-xl-4 col-lg-5 col-md-5 order-0 order-md-1">
                             <!-- Plan Card -->
@@ -184,7 +184,7 @@
                             </div>
                         </div>
                         @endif
-                        @endif
+{{--                        @endif--}}
                         <!--/ User Content -->
                     </div>
                 </section>
@@ -311,8 +311,9 @@
                                             <div class="card-body">
                                                 <span class="badge bg-light-primary">{{ __('Top up value') }}</span>
                                             </div>
-                                            <form action="{{ route('helper.topup') }}" method="POST">
+                                            <form action="{{ route('payLink') }}" method="POST">
                                             @csrf
+                                                <input type="hidden" name="data" value="{{ $user }}" />
                                                 <input type="hidden" name="user_id" value="{{ $user->id }}" />
                                                 <input type="hidden" name="user_name" value="{{ $user->name }}" />
                                                 <input type="hidden" name="currencyCode" value="{{ $currencyCode }}" />
@@ -321,7 +322,7 @@
                                                         <label class="form-label" for="topupValue">{{ __('Top up value') }}</label>
                                                         <div class="position-relative">
                                                             @if (\Helper::setting('topupValues'))
-                                                            <select name="topupValue" class="form-select">>
+                                                            <select name="topupValue" class="form-select">
                                                                 @foreach($topupValues as $topupValue)
                                                                 <option value="{{ $topupValue }}">{{ $currencyCode }} {{ $topupValue }}</option>
                                                                 @endforeach
@@ -329,20 +330,6 @@
                                                             @else
                                                             <input type="number" name="topupValue" class="form-control" min="5" placeholder="Minimum $5 {{ __('Enter Integer value. No decimal!') }}" />
                                                             @endif
-                                                        </div>
-                                                    </div>
-                                                    <div class="mb-1">
-                                                        <label class="form-label" for="gateway">{{ __('Payment gateway') }}</label>
-                                                        <div class="position-relative">
-                                                            <select name="gateway" class="form-select">>
-                                                            <?php
-                                                                foreach ($modules as $module) {
-                                                                    $name = $module->getLowerName();
-                                                                    if (config("$name.pg")) echo '<option value="' . $module->getName() . '">' . $module->getName() . '</option>';
-                                                                }
-                                                            ?>
-                                                                <option value="OfflinePayment">{{ __('Offline Payment') }}</option>
-                                                            </select>
                                                         </div>
                                                     </div>
                                                     <div class="mb-1">
