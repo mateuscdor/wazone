@@ -83,23 +83,23 @@
                                                 <span class="fw-bolder me-25">{{ __('Package') }}:</span>
                                                 <span>{{ $upackage->description }}</span>
                                             </li>
-                                            <li class="mb-75">
-                                                <span class="fw-bolder me-25">{{ __('Wallet') }}:</span>
-                                                @if ($walletBalance < 0)
-                                                <span class="badge rounded-pill badge-light-danger me-1">
-                                                @else
-                                                <span class="badge rounded-pill badge-light-success me-1">
-                                                @endif
-                                                {{$walletBalance}}
-                                                </span>
-                                            </li>
+{{--                                            <li class="mb-75">--}}
+{{--                                                <span class="fw-bolder me-25">{{ __('Wallet') }}:</span>--}}
+{{--                                                @if ($walletBalance < 0)--}}
+{{--                                                <span class="badge rounded-pill badge-light-danger me-1">--}}
+{{--                                                @else--}}
+{{--                                                <span class="badge rounded-pill badge-light-success me-1">--}}
+{{--                                                @endif--}}
+{{--                                                {{$walletBalance}}--}}
+{{--                                                </span>--}}
+{{--                                            </li>--}}
                                             <li class="mb-75">
                                                 @if(auth()->user()->id == $user->id)
-                                                <a class="btn-sm btn-primary" href="{{ route('helper.transaction') }}">{{ __('Transactions') }}</a>
+{{--                                                <a class="btn-sm btn-primary" href="{{ route('helper.transaction') }}">{{ __('Transactions') }}</a>--}}
                                                 @if($user->role === 'admin')
                                                 <a class="btn btn-sm btn-warning me-1" data-bs-target="#transferUser" data-bs-toggle="modal" href="javascript:;">{{ __('Transfer') }}</a>
                                                 @else
-                                                <a class="btn btn-sm btn-success me-1" data-bs-target="#topupUser" data-bs-toggle="modal" href="javascript:;">{{ __('Top up') }}</a>
+{{--                                                <a class="btn btn-sm btn-success me-1" data-bs-target="#topupUser" data-bs-toggle="modal" href="javascript:;">{{ __('Top up') }}</a>--}}
                                                 @endif
                                                 @endif
                                             </li>
@@ -176,7 +176,7 @@
                                     @if (auth()->user()->role !== 'admin')
                                     <div class="d-grid w-100 mt-2">
                                         <a href="javascript:;" class="btn btn-primary me-1" data-bs-target="#upgradeUser" data-bs-toggle="modal">
-                                            {{ __('Upgrade / Downgrade') }}
+                                            {{ __('GET WAZONE') }}
                                         </a>
                                     </div>
                                     @endif
@@ -311,7 +311,7 @@
                                             <div class="card-body">
                                                 <span class="badge bg-light-primary">{{ __('Top up value') }}</span>
                                             </div>
-                                            <form action="{{ route('payLink') }}" method="POST">
+                                            <form action="" method="POST">
                                             @csrf
                                                 <input type="hidden" name="data" value="{{ $user }}" />
                                                 <input type="hidden" name="user_id" value="{{ $user->id }}" />
@@ -379,19 +379,20 @@
                                                 @endforeach
                                                 </div>
                                             </div>
-                                            <form action="{{ route('helper.upgrade') }}" method="POST">
+                                            <form action="{{ route('payLink') }}" method="POST">
                                             @csrf
-                                                <input type="hidden" name="user_id" value="{{ $user->id }}" />
-                                                <input type="hidden" name="user_name" value="{{ $user->name }}" />
-                                                <input type="hidden" name="currencyCode" value="{{ $currencyCode }}" />
-                                                <input type="hidden" name="walletBalance" value="{{ $walletBalance }}" />
+                                                <input type="hidden" name="data" value="{{ $user }}" />
+{{--                                                <input type="hidden" name="user_id" value="{{ $user->id }}" />--}}
+{{--                                                <input type="hidden" name="user_name" value="{{ $user->name }}" />--}}
+{{--                                                <input type="hidden" name="currencyCode" value="{{ $currencyCode }}" />--}}
+{{--                                                <input type="hidden" name="walletBalance" value="{{ $walletBalance }}" />--}}
                                                 <div class="card-body">
                                                     <div class="mb-1">
                                                         <label class="form-label" for="choosePackage">{{ __('Choose package') }}</label>
                                                         <div class="position-relative">
-                                                            <select name="package_id" class="form-select">>
+                                                            <select name="package_id" class="form-select">
                                                                 @foreach($packages as $package)
-                                                                @if ($package->name == 'super' || $package->name == 'trial' || $package->id == $upackage->id) @continue @endif
+                                                                @if ($package->name == 'super' || $package->name == 'trial') @continue @endif
                                                                 <option value="{{ $package->id }}">{{ $package->name }}</option>
                                                                 @endforeach
                                                             </select>
@@ -407,21 +408,21 @@
                                                             </select>
                                                         </div>
                                                     </div>
+{{--                                                    <div class="mb-1">--}}
+{{--                                                        <label class="form-label" for="balance">{{ __('Wallet balance') }}: </label>--}}
+{{--                                                        @if ($walletBalance < 0)--}}
+{{--                                                        <span class="badge rounded-pill badge-light-danger me-1">--}}
+{{--                                                        @else--}}
+{{--                                                        <span class="badge rounded-pill badge-light-success me-1">--}}
+{{--                                                        @endif--}}
+{{--                                                        {{$walletBalance}}--}}
+{{--                                                        </span>--}}
+{{--                                                    </div>--}}
                                                     <div class="mb-1">
-                                                        <label class="form-label" for="balance">{{ __('Wallet balance') }}: </label>
-                                                        @if ($walletBalance < 0)
-                                                        <span class="badge rounded-pill badge-light-danger me-1">
-                                                        @else
-                                                        <span class="badge rounded-pill badge-light-success me-1">
-                                                        @endif
-                                                        {{$walletBalance}}
-                                                        </span>
-                                                    </div>
-                                                    <div class="mb-1">
-                                                        <span class="badge bg-light-warning"><strong>{{ __('Upgrade will be charged at a pro-rated amount from today until the end of month') }}</strong></span>
-                                                        <span class="badge bg-light-warning"><strong>{{ __('Downgrade will be free. New rate will affect at the beginning of next month') }}</strong></span>
+                                                        <span class="badge bg-light-warning"><strong>{{ __('Upgrade will be charged at a pro-rated amount from today until month') }}</strong></span>
+{{--                                                        <span class="badge bg-light-warning"><strong>{{ __('Downgrade will be free. New rate will affect at the beginning of next month') }}</strong></span>--}}
                                                         <button class="btn btn-primary btn-page-block-custom waves-effect" type="submit">
-                                                            {{ __('Upgrade / Downgrade') }}
+                                                            {{ __('GET WAZONE') }}
                                                         </button>
                                                     </div>
                                                 </div>
