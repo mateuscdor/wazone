@@ -27,7 +27,7 @@ class User extends Authenticatable
     {
       return $this->belongsTo(Package::class);
     }
-    
+
     public function outboxes()
     {
         return $this->hasMany(Outbox::class);
@@ -36,6 +36,11 @@ class User extends Authenticatable
     public function phonebooks()
     {
         return $this->hasMany(Phonebook::class);
+    }
+
+    public function blocked()
+    {
+        return $this->hasMany(Blocked::class);
     }
 
     public function templates()
