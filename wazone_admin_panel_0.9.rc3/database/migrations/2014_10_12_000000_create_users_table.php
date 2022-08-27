@@ -18,6 +18,9 @@ return new class extends Migration
         if (!Schema::hasTable('users')) {
             Schema::create('users', function (Blueprint $table) {
                 $table->id();
+                $table->unsignedBigInteger('marchant_id')->nullable();
+                $table->string('access_token')->nullable();
+                $table->string('refresh_token')->nullable();
                 $table->string('name', 50)->unique();
                 $table->string('email', 50)->unique();
                 $table->string('phone', 50)->nullable();
