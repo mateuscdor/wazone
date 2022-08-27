@@ -174,6 +174,7 @@ App::setLocale(auth()->user()->lang);
                 <li class="nav-item"><a class="d-flex align-items-center" href="{{ route('outbox.list') }}"><i data-feather="external-link"></i><span class="menu-item text-truncate">{{ __('Outbox') }}</span></a></li>
                 <li class="nav-item"><a class="d-flex align-items-center" href="{{ route('phonebook.list') }}"><i data-feather="book"></i><span class="menu-item text-truncate">{{ __('Phonebooks') }}</span></a></li>
                 <li class="nav-item"><a class="d-flex align-items-center" href="{{ route('template.list') }}"><i data-feather="message-square"></i><span class="menu-item text-truncate">{{ __('Templates') }}</span></a></li>
+                <li class="nav-item"><a class="d-flex align-items-center" href="{{ route('blocked.list') }}"><i data-feather="lock"></i><span class="menu-item text-truncate">{{ 'Blocked Numbers' }}</span></a></li>
                 <li class="nav-item"><a class="d-flex align-items-center" href="{{ route('restapi.index') }}"><i data-feather="zap"></i><span class="menu-item text-truncate">{{ __('Rest API') }}</span></a></li>
                 @if (\Module::find('ChatSupport') && \Module::find('ChatSupport')->isEnabled())
                 <li class="nav-item"><a class="d-flex align-items-center" href="{{ route('support.index') }}"><i data-feather='message-circle'></i><span class="menu-item text-truncate">{{ __('Chat support') }}</span></a></li>
