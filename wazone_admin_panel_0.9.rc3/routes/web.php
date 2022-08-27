@@ -110,6 +110,9 @@ Route::group(['middleware' => ['auth', 'verified', 'wa.verified']], function() {
     Route::post('/template-update', [TemplateController::class, 'update'])->name('template.update');
 
     Route::get('/blocked-list', [BlockedController::class, 'list'])->name('blocked.list');
+    Route::get('/blocked-search', [BlockedController::class, 'search'])->name('blocked.search');
+    Route::post('/blocked-store', [BlockedController::class, 'store'])->name('blocked.store');
+    Route::get('/blocked-destroy', [BlockedController::class, 'destroy'])->name('blocked.destroy');
 
     Route::group(['middleware' => ['active']], function() {
         Route::get('/sendmsg', [SendmsgController::class, 'index'])->name('sendmsg.index');
