@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Carbon\Carbon;
 
-class PayLinkGateway
+class PayLinkGateway extends Controller
 {
 
     protected function getToken(): string
@@ -23,9 +23,9 @@ class PayLinkGateway
 
             $response = $client->request('POST', 'https://restpilot.paylink.sa/api/auth', [
                 'body' => json_encode([
-                    'apiId' => 'APP_ID_1123453311',
+                    'apiId' => env('PAYLINK_APIID'),
                     'persistToken' => false,
-                    'secretKey' => '0662abb5-13c7-38ab-cd12-236e58f43766'
+                    'secretKey' => env('PAYLINK_SECRETKEY')
                 ]),
 
                 'headers' => [
