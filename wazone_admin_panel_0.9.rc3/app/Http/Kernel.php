@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\Salla;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -56,6 +57,7 @@ class Kernel extends HttpKernel
      */
     protected $routeMiddleware = [
         'active' => \App\Http\Middleware\Active::class,
+        'salla' => Salla::class,
         'admin' => \App\Http\Middleware\Admin::class,
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
