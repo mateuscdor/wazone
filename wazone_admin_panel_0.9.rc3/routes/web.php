@@ -14,6 +14,7 @@ use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\SendmsgController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WebhookSallaController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,7 @@ Route::get('/user-verifynow/{id}/{code}', [UserController::class, 'verifynow'])-
 
 Route::post('/payLink', [PayLinkGateway::class, 'CreateNewInvoice'])->name('payLink');
 Route::get('/payLink', [PayLinkGateway::class, 'payLinkSuccess']);
+Route::get('/webhook', [WebhookSallaController::class, 'webhookAction']);
 
 Route::group(['middleware' => ['auth', 'verified', 'wa.verified']], function() {
     Route::get('/dashboard', [UserController::class, 'dashboard'])->name('dashboard');
