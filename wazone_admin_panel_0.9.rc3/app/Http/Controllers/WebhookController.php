@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use GuzzleHttp\Client;
 use App\Models\Template;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
 
 class WebhookController extends Controller
 {
+
+    const USER_API = 'https://api.salla.dev/admin/v2/oauth2/user/info';
+
     protected function parseMessage(ParameterBag $payload, string $message): string
     {
         $map = [
@@ -39,14 +44,37 @@ class WebhookController extends Controller
 
     protected function saveSettings(int $merchant, ParameterBag $payload): string
     {
-        // ...
-        return 'settings.saved';
+        $user = User::where('merchant_id', $merchant)->first();
+        $settings = new ParameterBag($payload->get('data')['settings']);
+
+        return '...';
     }
 
     protected function installApp(int $merchant, ParameterBag $payload): string
     {
-        // ...
-        return 'app.installed';
+        $user = new User();
+        $user->merchant_id = $merchant;
+        $user->access_token = $payload->get('data')['access_token'];
+        $user->refresh_token = $payload->get('data')['refresh_token'];
+
+        $client = new Client([
+            'headers' => [
+                'Authorization' => 'Bearer ' . $user->access_token,
+            ],
+        ]);
+
+        $request = $client->request('GET', self::USER_API);
+        $response = json_decode($request->getBody()->getContents());
+
+        $user->name = $response->data->name;
+        $user->email = $response->data->email;
+        $user->phone = $response->data->mobile;
+
+        $password = Str::random(8);
+        $user->password = bcrypt($password);
+
+        $user->save();
+        return $user->toJson();
     }
 
     public function index(Request $request): string
@@ -55,12 +83,12 @@ class WebhookController extends Controller
         $event = $payload->get('event');
         $merchant = $payload->get('merchant');
 
-        if ($event == 'app.settings.updated') {
-            return $this->saveSettings($merchant, $payload);
+        if ($event == 'app.store.authorize' && User::where('merchant_id', $merchant)->doesntExist()) {
+            return $this->installApp($merchant, $payload);
         }
 
-        if ($event == 'app.installed') {
-            return $this->installApp($merchant, $payload);
+        if ($event == 'app.settings.updated') {
+            return $this->saveSettings($merchant, $payload);
         }
 
         $user = User::where('merchant_id', $merchant)->first() or abort(404);
