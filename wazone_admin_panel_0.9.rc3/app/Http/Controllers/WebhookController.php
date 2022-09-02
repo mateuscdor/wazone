@@ -13,7 +13,6 @@ class WebhookController extends Controller
     {
         $map = [
             'رقم الطلب' => '',
-            'اسم العميل' => '',
         ];
 
         $event = $payload->get('event');
