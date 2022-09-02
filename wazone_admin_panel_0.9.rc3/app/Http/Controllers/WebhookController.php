@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use GuzzleHttp\Client;
+use App\Models\Blocked;
 use App\Models\Template;
+use App\Helpers\Formatter;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -47,7 +49,36 @@ class WebhookController extends Controller
         $user = User::where('merchant_id', $merchant)->first();
         $settings = new ParameterBag($payload->get('data')['settings']);
 
-        return '...';
+        /* Handle Templates */
+        $switches = collect($settings->keys())
+            ->filter(fn($key) => Str::startsWith($key, 'switch.'))
+            ->values();
+
+        foreach ($switches as $switch) {
+            $event = Str::after($switch, 'switch.');
+            if (!$settings->get("switch.$event")) continue;
+
+            $template = Template::firstOrNew([
+                'user_id' => $user->id,
+                'name' => $event,
+            ]);
+
+            $template->name = $event;
+            $template->msgtext = $settings->get("message.$event");
+            $template->save();
+        }
+
+        /* Handle Blocked Numbers */
+        $blocked = collect($settings->get('blocked.numbers'))
+            ->map(fn($number) => Formatter::pf($number['blocked.numbers.number']));
+
+        Blocked::where('user_id', $user->id)->delete();
+        Blocked::insert($blocked->map(fn($number) => [
+            'user_id' => $user->id,
+            'mobile' => $number,
+        ])->toArray());
+
+        return 'settings.saved';
     }
 
     protected function installApp(int $merchant, ParameterBag $payload): string
@@ -58,17 +89,18 @@ class WebhookController extends Controller
         $user->refresh_token = $payload->get('data')['refresh_token'];
 
         $client = new Client([
-            'headers' => [
-                'Authorization' => 'Bearer ' . $user->access_token,
-            ],
+            'http_errors' => false,
+            'headers' => ['Authorization' => "Bearer $user->access_token"],
         ]);
 
         $request = $client->request('GET', self::USER_API);
         $response = json_decode($request->getBody()->getContents());
 
-        $user->name = $response->data->name;
-        $user->email = $response->data->email;
-        $user->phone = $response->data->mobile;
+        if ($response->status == 200) {
+            $user->name = $response->data->name;
+            $user->email = $response->data->email;
+            $user->phone = $response->data->mobile;
+        }
 
         $password = Str::random(8);
         $user->password = bcrypt($password);
