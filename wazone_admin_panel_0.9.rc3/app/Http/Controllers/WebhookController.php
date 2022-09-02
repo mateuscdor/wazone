@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Outbox;
 use App\Models\User;
 use GuzzleHttp\Client;
 use App\Models\Blocked;
@@ -16,31 +17,75 @@ class WebhookController extends Controller
 
     const USER_API = 'https://api.salla.dev/admin/v2/oauth2/user/info';
 
-    protected function parseMessage(ParameterBag $payload, string $message): string
+    public function parseMessage(ParameterBag $payload, string $message): array
     {
-        $map = [
-            'رقم الطلب' => '',
-        ];
-
+        $map = [];
         $event = $payload->get('event');
 
         switch ($event) {
             case 'order.created':
-            case 'order.updated':
-            case 'order.refunded':
+            case 'order.payment.updated';
+                $customer_mobile =  $payload->get('data')['customer']["mobile"];
+                $map['اسم العميل'] = $payload->get('data')['customer']["first_name"];
+                $map['اسم المنتج'] = $payload->get('data')['items'][0]['name'];
                 $map['رقم الطلب'] = $payload->get('data')['reference_id'];
-                $map['اسم العميل'] = $payload->get('data')['customer']['first_name'];
-                break;
-            // ...
+                $map['رابط معلومات الطلب'] = $payload->get('data')['urls']['admin'];
+                $map['قيمة الطلب'] = $payload->get('data')['items'][0]['amounts']['total']['amount'];
+                $map['العملة'] = $payload->get('data')['currency'];
+                $map['حالة الطلب'] = $payload->get('data')['status']['customized']['name'];
+                $map['شركة الشحن'] = $payload->get('data')['shipping']['company'];
+                $map['رقم التتبع'] = $payload->get('data')['shipping']['id'];
+                $map['رابط التتبع'] = $payload->get('data')['shipping']['shipment']['tracking_link'];
+                $map['طريقة الدفع'] = $payload->get('data')['payment_method'];
+            break;
+            case 'order.status.updated':
+                $customer_mobile =  $payload->get('data')['order']['customer']["mobile"];
+                $map['اسم العميل'] = $payload->get('data')['order']['customer']["name"];
+                $map['اسم المنتج'] = implode(",", array_column($payload->get('data')['order']['items'],"name"));
+                $map['رقم الطلب'] = $payload->get('data')['order']['reference_id'];
+                $map['رابط معلومات الطلب'] = $payload->get('data')['order']['urls']['admin'];
+                $map['قيمة الطلب'] = $payload->get('data')['order']['amounts']['total']['amount'];
+                $map['العملة'] = $payload->get('data')['order']['currency'];
+                $map['حالة الطلب'] = $payload->get('data')['status'];
+                $map['شركة الشحن'] = $payload->get('data')['order']['shipping']['company'];
+                $map['رقم التتبع'] = $payload->get('data')['order']['shipping']['id'];
+                $map['رابط التتبع'] = $payload->get('data')['order']['shipping']['shipment']['tracking_link'];
+                $map['طريقة الدفع'] = $payload->get('data')['order']['payment_method'];
+            break;
+            case 'abandoned.cart':
+                $customer_mobile =  $payload->get('data')['customer']["mobile"];
+                $map['اسم العميل'] = $payload->get('data')['customer']["name"];
+                $map['اسم المنتج'] = implode(",", array_column($payload->get('data')['items'],"product_id"));
+                $map['رقم الطلب'] = '';
+                $map['رابط معلومات الطلب'] = '';
+                $map['قيمة الطلب'] = $payload->get('data')['total']['amount'];
+                $map['العملة'] = $payload->get('data')['total']['currency'];
+                $map['حالة الطلب'] = '';
+                $map['شركة الشحن'] = '';
+                $map['رقم التتبع'] = '';
+                $map['رابط التتبع'] ='';
+                $map['طريقة الدفع'] = '';
+            break;
         }
 
         $keys = array_map(fn($e) => '{{' . $e . '}}', array_keys($map));
-        return str_replace($keys, array_values($map), $message);
+        return [$customer_mobile, str_replace($keys, array_values($map), $message)];
     }
 
-    protected function saveMessage(User $user, string $message): void
+    protected function saveMessage(User $user, int $mobile, string $message): void
     {
-        // ...
+        $blocked = Blocked::where('mobile', $mobile)->where('user_id', $user->id)->first();
+
+        if (!$blocked)
+        {
+            $out_box = new Outbox();
+            $out_box->user_id = $user->id;
+            $out_box->sender = $user->phone;
+            $out_box->receiver = $mobile;
+            $out_box->msgtext = $message;
+            $out_box->schedule = time() + 300;
+            $out_box->save();
+        }
     }
 
     protected function saveSettings(int $merchant, ParameterBag $payload): string
@@ -108,7 +153,7 @@ class WebhookController extends Controller
         return $user->toJson();
     }
 
-    public function index(Request $request): string
+    public function index(Request $request): array
     {
         $payload = $request->json();
         $event = $payload->get('event');
@@ -125,9 +170,9 @@ class WebhookController extends Controller
         $user = User::where('merchant_id', $merchant)->first() or abort(404);
         $template = Template::where('user_id', $user->id)->where('name', $event)->first() or abort(404);
 
-        $message = $this->parseMessage($payload, $template->msgtext);
-        $this->saveMessage($user, $message);
+        $data_message = $this->parseMessage($payload, $template->msgtext);
+        $this->saveMessage($user, $data_message[0], $data_message[1]);
 
-        return $message;
+        return $data_message;
     }
 }
