@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Outbox;
 use App\Models\User;
+use App\Models\Outbox;
 use GuzzleHttp\Client;
 use App\Models\Blocked;
 use App\Models\Template;
@@ -15,8 +15,20 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 class WebhookController extends Controller
 {
 
+    /**
+     * Salla fetch user endpoint.
+     *
+     * @var string
+     */
     const USER_API = 'https://api.salla.dev/admin/v2/oauth2/user/info';
 
+    /**
+     * Resolve message parameters.
+     *
+     * @param ParameterBag $payload
+     * @param string $message
+     * @return array
+     */
     public function parseMessage(ParameterBag $payload, string $message): array
     {
         $map = [];
@@ -25,11 +37,11 @@ class WebhookController extends Controller
         switch ($event) {
             case 'order.created':
             case 'order.payment.updated';
-                $customer_mobile =  $payload->get('data')['customer']["mobile"];
-                $map['اسم العميل'] = $payload->get('data')['customer']["first_name"];
+                $mobile =  $payload->get('data')['customer']['mobile'];
+                $map['اسم العميل'] = $payload->get('data')['customer']['first_name'];
                 $map['اسم المنتج'] = $payload->get('data')['items'][0]['name'];
                 $map['رقم الطلب'] = $payload->get('data')['reference_id'];
-                $map['رابط معلومات الطلب'] = $payload->get('data')['urls']['admin'];
+                $map['رابط معلومات الطلب'] = $payload->get('data')['urls']['customer'];
                 $map['قيمة الطلب'] = $payload->get('data')['items'][0]['amounts']['total']['amount'];
                 $map['العملة'] = $payload->get('data')['currency'];
                 $map['حالة الطلب'] = $payload->get('data')['status']['customized']['name'];
@@ -38,12 +50,13 @@ class WebhookController extends Controller
                 $map['رابط التتبع'] = $payload->get('data')['shipping']['shipment']['tracking_link'];
                 $map['طريقة الدفع'] = $payload->get('data')['payment_method'];
             break;
+
             case 'order.status.updated':
-                $customer_mobile =  $payload->get('data')['order']['customer']["mobile"];
-                $map['اسم العميل'] = $payload->get('data')['order']['customer']["name"];
-                $map['اسم المنتج'] = implode(",", array_column($payload->get('data')['order']['items'],"name"));
+                $mobile =  $payload->get('data')['order']['customer']['mobile'];
+                $map['اسم العميل'] = $payload->get('data')['order']['customer']['name'];
+                $map['اسم المنتج'] = implode(',', array_column($payload->get('data')['order']['items'], 'name'));
                 $map['رقم الطلب'] = $payload->get('data')['order']['reference_id'];
-                $map['رابط معلومات الطلب'] = $payload->get('data')['order']['urls']['admin'];
+                $map['رابط معلومات الطلب'] = $payload->get('data')['order']['urls']['customer'];
                 $map['قيمة الطلب'] = $payload->get('data')['order']['amounts']['total']['amount'];
                 $map['العملة'] = $payload->get('data')['order']['currency'];
                 $map['حالة الطلب'] = $payload->get('data')['status'];
@@ -52,50 +65,57 @@ class WebhookController extends Controller
                 $map['رابط التتبع'] = $payload->get('data')['order']['shipping']['shipment']['tracking_link'];
                 $map['طريقة الدفع'] = $payload->get('data')['order']['payment_method'];
             break;
+
             case 'abandoned.cart':
-                $customer_mobile =  $payload->get('data')['customer']["mobile"];
-                $map['اسم العميل'] = $payload->get('data')['customer']["name"];
-                $map['اسم المنتج'] = implode(",", array_column($payload->get('data')['items'],"product_id"));
-                $map['رقم الطلب'] = '';
-                $map['رابط معلومات الطلب'] = '';
+                $mobile =  $payload->get('data')['customer']['mobile'];
+                $map['اسم العميل'] = $payload->get('data')['customer']['name'];
+                $map['اسم المنتج'] = implode(',', array_column($payload->get('data')['items'], 'product_id'));
                 $map['قيمة الطلب'] = $payload->get('data')['total']['amount'];
                 $map['العملة'] = $payload->get('data')['total']['currency'];
-                $map['حالة الطلب'] = '';
-                $map['شركة الشحن'] = '';
-                $map['رقم التتبع'] = '';
-                $map['رابط التتبع'] ='';
-                $map['طريقة الدفع'] = '';
             break;
         }
 
-        $keys = array_map(fn($e) => '{{' . $e . '}}', array_keys($map));
-        return [$customer_mobile, str_replace($keys, array_values($map), $message)];
+        $mobile = Formatter::pf($mobile);
+        $keys = array_map(fn ($e) => '{{' . $e . '}}', array_keys($map));
+        return [$mobile, str_replace($keys, array_values($map), $message)];
     }
 
-    protected function saveMessage(User $user, int $mobile, string $message): void
+    /**
+     * Save the message to the outbox.
+     *
+     * @param User $user
+     * @param string $mobile
+     * @param string $message
+     * @return void
+     */
+    protected function saveMessage(User $user, string $mobile, string $message): void
     {
-        $blocked = Blocked::where('mobile', $mobile)->where('user_id', $user->id)->first();
-
-        if (!$blocked)
-        {
-            $out_box = new Outbox();
-            $out_box->user_id = $user->id;
-            $out_box->sender = $user->phone;
-            $out_box->receiver = $mobile;
-            $out_box->msgtext = $message;
-            $out_box->schedule = time() + 300;
-            $out_box->save();
+        if (Blocked::where('mobile', $mobile)->where('user_id', $user->id)->doesntExist()) {
+            $outbox = new Outbox();
+            $outbox->user_id = $user->id;
+            $outbox->sender = $user->phone;
+            $outbox->receiver = Formatter::pf($mobile);
+            $outbox->msgtext = $message;
+            $outbox->schedule = time() + 300;
+            $outbox->save();
         }
     }
 
-    protected function saveSettings(int $merchant, ParameterBag $payload): string
+    /**
+     * Save user settings.
+     *
+     * @param string $merchant
+     * @param ParameterBag $payload
+     * @return void
+     */
+    protected function saveSettings(string $merchant, ParameterBag $payload): void
     {
         $user = User::where('merchant_id', $merchant)->first();
         $settings = new ParameterBag($payload->get('data')['settings']);
 
         /* Handle Templates */
         $switches = collect($settings->keys())
-            ->filter(fn($key) => Str::startsWith($key, 'switch.'))
+            ->filter(fn ($key) => Str::startsWith($key, 'switch.'))
             ->values();
 
         foreach ($switches as $switch) {
@@ -114,18 +134,23 @@ class WebhookController extends Controller
 
         /* Handle Blocked Numbers */
         $blocked = collect($settings->get('blocked.numbers'))
-            ->map(fn($number) => Formatter::pf($number['blocked.numbers.number']));
+            ->map(fn ($number) => Formatter::pf($number['blocked.numbers.number']));
 
         Blocked::where('user_id', $user->id)->delete();
-        Blocked::insert($blocked->map(fn($number) => [
+        Blocked::insert($blocked->map(fn ($number) => [
             'user_id' => $user->id,
             'mobile' => $number,
         ])->toArray());
-
-        return 'settings.saved';
     }
 
-    protected function installApp(int $merchant, ParameterBag $payload): string
+    /**
+     * Install wazone to salla store.
+     *
+     * @param string $merchant
+     * @param ParameterBag $payload
+     * @return void
+     */
+    protected function installApp(string $merchant, ParameterBag $payload): void
     {
         $user = new User();
         $user->merchant_id = $merchant;
@@ -150,29 +175,42 @@ class WebhookController extends Controller
         $user->password = bcrypt($password);
 
         $user->save();
-        return $user->toJson();
+
+        $message = sprintf(
+            "تم تثبيت وازون بنجاح، يمكنك تسجيل الدخول من خلال البريد البريد الإلكتروني %s وكلمة السر %s",
+            $user->email,
+            $user->phone
+        );
+
+        $this->sendMessage($user, $user->phone, $message);
     }
 
-    public function index(Request $request): array
+    /**
+     * WebhookController index
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function index(Request $request): void
     {
         $payload = $request->json();
         $event = $payload->get('event');
         $merchant = $payload->get('merchant');
 
         if ($event == 'app.store.authorize' && User::where('merchant_id', $merchant)->doesntExist()) {
-            return $this->installApp($merchant, $payload);
+            $this->installApp($merchant, $payload);
+            return;
         }
 
         if ($event == 'app.settings.updated') {
-            return $this->saveSettings($merchant, $payload);
+            $this->saveSettings($merchant, $payload);
+            return;
         }
 
         $user = User::where('merchant_id', $merchant)->first() or abort(404);
         $template = Template::where('user_id', $user->id)->where('name', $event)->first() or abort(404);
 
-        $data_message = $this->parseMessage($payload, $template->msgtext);
-        $this->saveMessage($user, $data_message[0], $data_message[1]);
-
-        return $data_message;
+        [ $mobile, $message ] = $this->parseMessage($payload, $template->msgtext);
+        $this->saveMessage($user, $mobile, $message);
     }
 }
