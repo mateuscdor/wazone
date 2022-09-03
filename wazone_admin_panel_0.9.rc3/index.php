@@ -22,6 +22,8 @@ if (! file_exists('.env') && ! empty($_POST)) {
     'DB_DATABASE=' . $_POST['DB_DATABASE'] . "\n" .
     'DB_USERNAME=' . $_POST['DB_USERNAME'] . "\n" .
     'DB_PASSWORD=' . $_POST['DB_PASSWORD'] . "\n\n" .
+    '# Salla Token' . "\n" .
+    'SALLA_TOKEN=' . $_POST['SALLA_TOKEN'] . "\n\n" .
     '# Outgoing mail server' . "\n" .
     'MAIL_MAILER=smtp' . "\n" .
     'MAIL_HOST=mail.arrocy.com' . "\n" .
@@ -48,6 +50,7 @@ if (file_exists('.env')) {
     $DB_DATABASE = '';
     $DB_USERNAME = '';
     $DB_PASSWORD = '';
+    $SALLA_TOKEN = '';
     foreach($arr as $a) {
         $x = explode("=", $a);
         if ($x[0] == 'APP_URL') {$APP_URL = $x[1];}
@@ -58,6 +61,7 @@ if (file_exists('.env')) {
         if ($x[0] == 'DB_DATABASE') {$DB_DATABASE = $x[1];}
         if ($x[0] == 'DB_USERNAME') {$DB_USERNAME = $x[1];}
         if ($x[0] == 'DB_PASSWORD') {$DB_PASSWORD = $x[1];}
+        if ($x[0] == 'SALLA_TOKEN') {$SALLA_TOKEN = $x[1];}
     }
 
     $data =
@@ -168,6 +172,10 @@ if (file_exists('.env')) {
                                             <div class="col-6">
                                                 <label for="DB_PASSWORD">Database password</label>
                                                 <input type="text" name="DB_PASSWORD" class="form-control" placeholder="Database password">
+                                            </div><br>
+                                            <div class="col-6">
+                                                <label for="SALLA_TOKEN">Salla token</label>
+                                                <input type="text" name="SALLA_TOKEN" class="form-control" placeholder="Salla token">
                                             </div>
                                         </div>
                                         <br>
