@@ -36,7 +36,8 @@ class WebhookController extends Controller
 
         switch ($event) {
             case 'order.created':
-            case 'order.payment.updated';
+            case 'order.payment.cod':
+            case 'order.payment.updated':
                 $mobile =  $payload->get('data')['customer']['mobile'];
                 $map['اسم العميل'] = $payload->get('data')['customer']['first_name'];
                 $map['اسم المنتج'] = $payload->get('data')['items'][0]['name'];
@@ -205,6 +206,10 @@ class WebhookController extends Controller
         if ($event == 'app.settings.updated') {
             $this->saveSettings($merchant, $payload);
             return;
+        }
+
+        if ($event == 'order.payment.updated' && $payload->get('data')['payment_method'] == 'cod') {
+            $event = 'order.payment.cod';
         }
 
         $user = User::where('merchant_id', $merchant)->first() or abort(404);
