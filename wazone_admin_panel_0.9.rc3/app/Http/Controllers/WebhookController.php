@@ -53,6 +53,16 @@ class WebhookController extends Controller
             break;
 
             case 'order.status.updated':
+            case 'order.status.updated.payment_pending':
+            case 'order.status.updated.under_review':
+            case 'order.status.updated.in_progress':
+            case 'order.status.updated.completed':
+            case 'order.status.updated.delivering':
+            case 'order.status.updated.delivered':
+            case 'order.status.updated.shipped':
+            case 'order.status.updated.canceled':
+            case 'order.status.updated.restored':
+            case 'order.status.updated.restoring':
                 $mobile =  $payload->get('data')['order']['customer']['mobile'];
                 $map['اسم العميل'] = $payload->get('data')['order']['customer']['name'];
                 $map['اسم المنتج'] = implode(',', array_column($payload->get('data')['order']['items'], 'name'));
@@ -210,6 +220,11 @@ class WebhookController extends Controller
 
         if ($event == 'order.payment.updated' && $payload->get('data')['payment_method'] == 'cod') {
             $event = 'order.payment.cod';
+        }
+
+        if ($event == 'order.status.updated') {
+            $slug = $payload->get('data')['order']['status']['slug'];
+            $event = $event . ".$slug";
         }
 
         $user = User::where('merchant_id', $merchant)->first() or abort(404);
