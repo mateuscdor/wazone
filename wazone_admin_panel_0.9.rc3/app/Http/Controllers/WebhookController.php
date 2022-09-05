@@ -38,7 +38,7 @@ class WebhookController extends Controller
             case 'order.created':
             case 'order.payment.cod':
             case 'order.payment.updated':
-                $mobile =  $payload->get('data')['customer']['mobile'];
+                $mobile = $payload->get('data')['customer']['mobile'];
                 $map['اسم العميل'] = $payload->get('data')['customer']['first_name'];
                 $map['اسم المنتج'] = $payload->get('data')['items'][0]['name'];
                 $map['رقم الطلب'] = $payload->get('data')['reference_id'];
@@ -63,7 +63,7 @@ class WebhookController extends Controller
             case 'order.status.updated.canceled':
             case 'order.status.updated.restored':
             case 'order.status.updated.restoring':
-                $mobile =  $payload->get('data')['order']['customer']['mobile'];
+                $mobile = $payload->get('data')['order']['customer']['mobile'];
                 $map['اسم العميل'] = $payload->get('data')['order']['customer']['name'];
                 $map['اسم المنتج'] = implode(',', array_column($payload->get('data')['order']['items'], 'name'));
                 $map['رقم الطلب'] = $payload->get('data')['order']['reference_id'];
@@ -78,11 +78,16 @@ class WebhookController extends Controller
             break;
 
             case 'abandoned.cart':
-                $mobile =  $payload->get('data')['customer']['mobile'];
+                $mobile = $payload->get('data')['customer']['mobile'];
                 $map['اسم العميل'] = $payload->get('data')['customer']['name'];
                 $map['اسم المنتج'] = implode(',', array_column($payload->get('data')['items'], 'product_id'));
                 $map['قيمة الطلب'] = $payload->get('data')['total']['amount'];
                 $map['العملة'] = $payload->get('data')['total']['currency'];
+            break;
+
+            case 'customer.otp.request':
+                $mobile = $payload->get('data')['contact'];
+                $map['رمز التحقق'] = $payload->get('data')['code'];
             break;
         }
 
