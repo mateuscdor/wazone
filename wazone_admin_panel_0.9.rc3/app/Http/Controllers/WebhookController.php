@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Outbox;
 use GuzzleHttp\Client;
 use App\Models\Blocked;
 use App\Models\Template;
 use App\Helpers\Formatter;
+use App\Models\Setting;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -102,9 +104,10 @@ class WebhookController extends Controller
      * @param User $user
      * @param string $mobile
      * @param string $message
+     * @param int $delay
      * @return void
      */
-    protected function saveMessage(User $user, string $mobile, string $message): void
+    protected function saveMessage(User $user, string $mobile, string $message, int $delay = 0): void
     {
         if (Blocked::where('mobile', $mobile)->where('user_id', $user->id)->doesntExist()) {
             $outbox = new Outbox();
@@ -113,6 +116,7 @@ class WebhookController extends Controller
             $outbox->receiver = Formatter::pf($mobile);
             $outbox->msgtext = $message;
             $outbox->schedule = time() + 300;
+            $outbox->schedule = Carbon::now()->addMinutes($delay);
             $outbox->save();
         }
     }
@@ -157,6 +161,13 @@ class WebhookController extends Controller
             'user_id' => $user->id,
             'mobile' => $number,
         ])->toArray());
+
+        /* Handle Abandoned Cart Delay */
+        Setting::where('key', "delay.$merchant")->delete();
+        Setting::insert([
+            'key' => "delay.$merchant",
+            'value' => $settings->get('delay.abandoned.cart'),
+        ]);
     }
 
     /**
@@ -236,6 +247,14 @@ class WebhookController extends Controller
         $template = Template::where('user_id', $user->id)->where('name', $event)->first() or abort(404);
 
         [ $mobile, $message ] = $this->parseMessage($payload, $template->msgtext);
-        $this->saveMessage($user, $mobile, $message);
+
+        if ($event = 'abandoned.cart') {
+            $delay = Setting::where('key', "delay.$merchant")->first();
+            $delay = ($delay->value * 60) - $payload->get('data')['age_in_minutes'];
+            if ($delay > 0) return;
+        }
+
+        $delay = $delay ?? 0;
+        $this->saveMessage($user, $mobile, $message, $delay);
     }
 }
