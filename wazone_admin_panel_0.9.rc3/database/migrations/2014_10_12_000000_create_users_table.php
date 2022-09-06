@@ -22,7 +22,7 @@ return new class extends Migration
                 $table->string('access_token')->nullable();
                 $table->string('refresh_token')->nullable();
                 $table->string('name', 50)->unique();
-                $table->string('email', 50)->unique();
+                $table->string('email')->unique();
                 $table->string('phone', 50)->nullable();
                 $table->string('password', 191);
                 $table->string('role', 20)->default('user')->comment('admin, user');
